@@ -8,9 +8,9 @@ class LinearRegression {
 
     //generates an extra column so we can use the matrix multiplication
     //ones([shape]) shape = features row, one column,    1 for concatenation axis
-    this.features = tf.ones([this.features.shape[0], 1]).concat(this.features, 1);
-
-
+    this.features = tf
+      .ones([this.features.shape[0], 1])
+      .concat(this.features, 1);
 
     //if we dont provide learning rate in options the default rate will be 0.1
     this.options = Object.assign(
@@ -18,12 +18,23 @@ class LinearRegression {
       options
     );
 
-    //initial guesses
-    this.m = 0;
-    this.b = 0;
+    //initial guesses, M and B previously
+    this.weights = tf.zeros([2, 1]);
   }
 
   gradientDescent() {
+    //mathmul matrix multiplication
+    const currentGuesses = this.features.matMul(this.weights);
+    const differences = currentGuesses.sub(this.labels);
+
+    const slopes = this.features
+      .transpose() // RESHAPING TENSOR so we can match the shape of differences
+      .matMul(differences)
+      .div(this.features.shape[0]);
+  }
+
+  //old implementation
+  /* gradientDescent() {
     const currentGuessesForMPG = this.features.map((row) => {
       //inner array calculation or features * weights
       return this.m * row[0] + this.b;
@@ -50,8 +61,8 @@ class LinearRegression {
 
       this.m = this.m - mSlope * this.options.learningRate;
       this.b = this.b - bSlope * this.options.learningRate;
-  }
-  
+  } */
+
   train() {
     for (let index = 0; index < this.options.iterations; index++) {
       this.gradientDescent();
