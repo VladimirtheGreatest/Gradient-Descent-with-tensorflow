@@ -31,6 +31,8 @@ class LinearRegression {
       .transpose() // RESHAPING TENSOR so we can match the shape of differences
       .matMul(differences)
       .div(this.features.shape[0]);
+
+      this.weights = this.weights.sub(slopes.mul(this.options.learningRate)); //this.m = this.m - mSlope * this.options.learningRate;
   }
 
   //old implementation
