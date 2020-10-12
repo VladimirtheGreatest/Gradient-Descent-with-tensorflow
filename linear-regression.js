@@ -3,8 +3,15 @@ const _ = require("lodash");
 
 class LinearRegression {
   constructor(features, labels, options) {
-    this.features = features;
-    this.labels = labels;
+    this.features = tf.tensor(features);
+    this.labels = tf.tensor(labels);
+
+    //generates an extra column so we can use the matrix multiplication
+    //ones([shape]) shape = features row, one column,    1 for concatenation axis
+    this.features = tf.ones([this.features.shape[0], 1]).concat(this.features, 1);
+
+
+
     //if we dont provide learning rate in options the default rate will be 0.1
     this.options = Object.assign(
       { learningRate: 0.1, iterations: 1000 },
@@ -18,7 +25,7 @@ class LinearRegression {
 
   gradientDescent() {
     const currentGuessesForMPG = this.features.map((row) => {
-      //inner array calculation
+      //inner array calculation or features * weights
       return this.m * row[0] + this.b;
     });
 
@@ -26,7 +33,7 @@ class LinearRegression {
     const bSlope =
       (_.sum(
         currentGuessesForMPG.map((guess, i) => {
-          return guess - this.labels[i][0];
+          return guess - this.labels[i][0];   //inner array - labels
         })
       ) *
         2) /
