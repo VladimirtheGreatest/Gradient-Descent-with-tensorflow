@@ -63,7 +63,24 @@ class LinearRegression {
     features = tf.tensor(features);
     features = tf.ones([features.shape[0], 1]).concat(features, 1);
 
+    //we have to reapply mean and variance for our test set if it is second time
+    if(this.mean && this.variance){
+      features =  features.sub(this.mean).div(this.variance.pow(0.5));
+      //we use our helper function for the first case
+    } else {
+      features = this.standardize(features);
+    }
+
     return features;
+  }
+
+  standardize(features){
+    const {mean, variance} = tf.moments(features, 0);
+
+    this.mean = mean;
+    this.variance = variance;
+
+    return features.sub(mean).div(variance.pow(0.5));
   }
 }
 
