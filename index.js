@@ -17,5 +17,9 @@ const regression = new LinearRegression(features, labels, {
 
 
 regression.train();
+const r2 = regression.test(testFeatures, testLabels);
 
-console.log('Updated M is:', regression.weights.get(1,0), 'Updated B is:', regression.weights.get(0,0));
+console.log('Coefficient of determination is', r2);
+//negative value means bad result, we need to improve accuracy of our analysis
+
+//console.log('Updated M is:', regression.weights.get(1,0), 'Updated B is:', regression.weights.get(0,0));

@@ -1,6 +1,5 @@
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
-import * as GradientDescentOld from './gradientDescentOld';
 
 class LinearRegression {
   constructor(features, labels, options) {
@@ -40,6 +39,30 @@ class LinearRegression {
     for (let index = 0; index < this.options.iterations; index++) {
       this.gradientDescent();
     }
+  }
+  test(testFeatures,testLabels){
+    testFeatures = tf.tensor(testFeatures);
+    testLabels = tf.tensor(testLabels);
+
+    testFeatures = tf.ones([testFeatures.shape[0], 1]).concat(testFeatures, 1);
+
+    const predictions = testFeatures.matMul(this.weights);
+
+    //coefficient of determination  R2 = 1 - total sum of squares / sum of squares of residuals  check notes, aka gauging accuracy of our prediction
+
+    //sum of squares of residuals
+    const res = testLabels.sub(predictions)
+    .pow(2)
+    .sum() // we dont have to provide axis for this
+    .get()
+    //total sum of squares
+    const tot = testLabels
+    .sub(testLabels.mean())
+    .pow(2)
+    .sum()
+    .get();
+
+    return 1 - res / tot;
   }
 }
 
