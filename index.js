@@ -2,6 +2,7 @@ require("@tensorflow/tfjs-node");
 const tf = require("@tensorflow/tfjs");
 const loadCSV = require("./load-csv");
 const LinearRegression = require('./linear-regression');
+const plot = require('node-remote-plot');
 
 let { features, labels, testFeatures, testLabels } = loadCSV("./cars.csv", {
   shuffle: true,
@@ -11,7 +12,7 @@ let { features, labels, testFeatures, testLabels } = loadCSV("./cars.csv", {
 });
 
 const regression = new LinearRegression(features, labels, {
-  learningRate : 10,
+  learningRate : 0.1,
   iterations: 100
 });
 
@@ -19,7 +20,13 @@ const regression = new LinearRegression(features, labels, {
 regression.train();
 const r2 = regression.test(testFeatures, testLabels);
 
-console.log('MSE History', regression.mseHistory);
+plot({
+ x: regression.mseHistory.reverse(), //we have to reverse iteration 
+ xLabel : 'Iteration Number',
+ yLabel : 'Mean Squared Error'
+});
+
+
 console.log('Coefficient of determination is', r2);
 //negative value means bad result, we need to improve accuracy of our analysis
 
