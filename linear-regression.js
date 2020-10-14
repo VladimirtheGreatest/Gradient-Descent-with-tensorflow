@@ -5,6 +5,7 @@ class LinearRegression {
   constructor(features, labels, options) {
     this.features = this.processFeatures(features);
     this.labels = tf.tensor(labels);
+    this.mseHistory = [];
 
     //if we dont provide learning rate in options the default rate will be 0.1
     this.options = Object.assign(
@@ -13,7 +14,7 @@ class LinearRegression {
     );
 
     //initial guesses, M and B previously
-    this.weights = tf.zeros([2, 1]);
+    this.weights = tf.zeros([this.features.shape[1], 1]);
   }
 
   gradientDescent() {
@@ -21,6 +22,7 @@ class LinearRegression {
     const currentGuesses = this.features.matMul(this.weights);
     const differences = currentGuesses.sub(this.labels);
 
+    
     const slopes = this.features
       .transpose() // RESHAPING TENSOR so we can match the shape of differences
       .matMul(differences)
@@ -32,6 +34,8 @@ class LinearRegression {
   train() {
     for (let index = 0; index < this.options.iterations; index++) {
       this.gradientDescent();
+      this.recordMSE();
+      this.updateLearningRate();
     }
   }
   test(testFeatures,testLabels){
@@ -82,6 +86,31 @@ class LinearRegression {
     this.variance = variance;
 
     return features.sub(mean).div(variance.pow(0.5));
+  }
+  //vectorized solution
+  recordMSE(){
+    const mse = this.features
+    .matMul(this.weights)
+    .sub(this.labels)
+    .pow(2)
+    .sum()
+    .div(this.features.shape[0])  //number of observations
+    .get();
+
+    //put the most recet mse in the beginning of the array
+    this.mseHistory.unshift(mse);
+  }
+
+  updateLearningRate(){
+    if(this.mseHistory.length < 2){
+      return;
+    }
+      //if the value of mse goes up we are overshooting and getting incorrect values we need to decrease our learning rate
+    if(this.mseHistory[0] > this.mseHistory[1]){
+      this.options.learningRate = this.options.learningRate / 2;
+    } else{
+      this.learningRate *= 1.05;  //increase the learning by 5% if the MSE error goes down and we are getting closer to the optimal value
+    }
   }
 }
 
