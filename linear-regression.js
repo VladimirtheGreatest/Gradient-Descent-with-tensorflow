@@ -61,7 +61,6 @@ class LinearRegression {
     //generates an extra column so we can use the matrix multiplication
     //ones([shape]) shape = features row, one column,    1 for concatenation axis
     features = tf.tensor(features);
-    features = tf.ones([features.shape[0], 1]).concat(features, 1);
 
     //we have to reapply mean and variance for our test set if it is second time
     if(this.mean && this.variance){
@@ -70,6 +69,8 @@ class LinearRegression {
     } else {
       features = this.standardize(features);
     }
+    //column of ones needs to come after standardization so we do not change the ones values
+    features = tf.ones([features.shape[0], 1]).concat(features, 1);
 
     return features;
   }
