@@ -109,7 +109,7 @@ class LinearRegression {
     if(this.mseHistory[0] > this.mseHistory[1]){
       this.options.learningRate = this.options.learningRate / 2;
     } else{
-      this.learningRate *= 1.05;  //increase the learning by 5% if the MSE error goes down and we are getting closer to the optimal value
+      this.options.learningRate *= 1.05;  //increase the learning by 5% if the MSE error goes down and we are getting closer to the optimal value
     }
   }
 }
