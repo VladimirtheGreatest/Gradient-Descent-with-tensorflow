@@ -77,6 +77,10 @@ class LinearRegression {
     return 1 - res / tot;
   }
 
+  predict(observations){
+    return this.processFeatures(observations).matMul(this.weights);
+  }
+
   processFeatures(features) {
     //generates an extra column so we can use the matrix multiplication
     //ones([shape]) shape = features row, one column,    1 for concatenation axis

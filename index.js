@@ -13,7 +13,7 @@ let { features, labels, testFeatures, testLabels } = loadCSV("./cars.csv", {
 
 const regression = new LinearRegression(features, labels, {
   learningRate: 0.1,
-  iterations: 100,
+  iterations: 3,
   batchSize: 10
 });
 
@@ -29,4 +29,8 @@ plot({
 console.log("Coefficient of determination is", r2);
 //negative value means bad result, we need to improve accuracy of our analysis
 
-//console.log('Updated M is:', regression.weights.get(1,0), 'Updated B is:', regression.weights.get(0,0));
+//["horsepower", "weight", "displacement"]
+regression.predict([
+  [46, 1.75, 307]
+]).print();
+//result mile per gallon prediction
