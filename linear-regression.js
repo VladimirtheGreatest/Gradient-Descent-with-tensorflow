@@ -17,28 +17,38 @@ class LinearRegression {
     this.weights = tf.zeros([this.features.shape[1], 1]);
   }
 
-  gradientDescent() {
+  gradientDescent(features, labels) {
     //mathmul matrix multiplication
-    const currentGuesses = this.features.matMul(this.weights);
-    const differences = currentGuesses.sub(this.labels);
+    const currentGuesses = features.matMul(this.weights);
+    const differences = currentGuesses.sub(labels);
 
-    
-    const slopes = this.features
+    const slopes = features
       .transpose() // RESHAPING TENSOR so we can match the shape of differences
       .matMul(differences)
-      .div(this.features.shape[0]);
+      .div(features.shape[0]);
 
-      this.weights = this.weights.sub(slopes.mul(this.options.learningRate)); //this.m = this.m - mSlope * this.options.learningRate;
+    this.weights = this.weights.sub(slopes.mul(this.options.learningRate)); //this.m = this.m - mSlope * this.options.learningRate;
   }
 
   train() {
-    for (let index = 0; index < this.options.iterations; index++) {
-      this.gradientDescent();
+    //batch gradient descent        rows/batchsize == how many times we iterate
+    const batchQuantity = Math.floor(this.features.shape[0] / this.options.batchSize); // in case we have soem leftover odd number
+
+    for (let index = 0; index < this; index++) {
+      for(let j = 0; j < batchQuantity; j++){
+        const startIndex = j * this.options.batchSize;
+        const {batchSize} = this.options;
+
+        const featureSlice = this.features.slice([startIndex, 0], [batchSize, -1]);
+        const labelSlice = this.labels.slice([startIndex, 0], [batchSize, -1]);
+        
+        this.gradientDescent(featureSlice, labelSlice);
+      }
       this.recordMSE();
       this.updateLearningRate();
     }
   }
-  test(testFeatures,testLabels){
+  test(testFeatures, testLabels) {
     testFeatures = this.processFeatures(testFeatures);
     testLabels = tf.tensor(testLabels);
 
@@ -47,28 +57,25 @@ class LinearRegression {
     //coefficient of determination  R2 = 1 - total sum of squares / sum of squares of residuals  check notes, aka gauging accuracy of our prediction
 
     //sum of squares of residuals
-    const res = testLabels.sub(predictions)
-    .pow(2)
-    .sum() // we dont have to provide axis for this
-    .get()
+    const res = testLabels
+      .sub(predictions)
+      .pow(2)
+      .sum() // we dont have to provide axis for this
+      .get();
     //total sum of squares
-    const tot = testLabels
-    .sub(testLabels.mean())
-    .pow(2)
-    .sum()
-    .get();
+    const tot = testLabels.sub(testLabels.mean()).pow(2).sum().get();
 
     return 1 - res / tot;
   }
 
-  processFeatures(features){
+  processFeatures(features) {
     //generates an extra column so we can use the matrix multiplication
     //ones([shape]) shape = features row, one column,    1 for concatenation axis
     features = tf.tensor(features);
 
     //we have to reapply mean and variance for our test set if it is second time
-    if(this.mean && this.variance){
-      features =  features.sub(this.mean).div(this.variance.pow(0.5));
+    if (this.mean && this.variance) {
+      features = features.sub(this.mean).div(this.variance.pow(0.5));
       //we use our helper function for the first case
     } else {
       features = this.standardize(features);
@@ -79,8 +86,8 @@ class LinearRegression {
     return features;
   }
 
-  standardize(features){
-    const {mean, variance} = tf.moments(features, 0);
+  standardize(features) {
+    const { mean, variance } = tf.moments(features, 0);
 
     this.mean = mean;
     this.variance = variance;
@@ -88,28 +95,28 @@ class LinearRegression {
     return features.sub(mean).div(variance.pow(0.5));
   }
   //vectorized solution
-  recordMSE(){
+  recordMSE() {
     const mse = this.features
-    .matMul(this.weights)
-    .sub(this.labels)
-    .pow(2)
-    .sum()
-    .div(this.features.shape[0])  //number of observations
-    .get();
+      .matMul(this.weights)
+      .sub(this.labels)
+      .pow(2)
+      .sum()
+      .div(this.features.shape[0]) //number of observations
+      .get();
 
     //put the most recet mse in the beginning of the array
     this.mseHistory.unshift(mse);
   }
 
-  updateLearningRate(){
-    if(this.mseHistory.length < 2){
+  updateLearningRate() {
+    if (this.mseHistory.length < 2) {
       return;
     }
-      //if the value of mse goes up we are overshooting and getting incorrect values we need to decrease our learning rate
-    if(this.mseHistory[0] > this.mseHistory[1]){
+    //if the value of mse goes up we are overshooting and getting incorrect values we need to decrease our learning rate
+    if (this.mseHistory[0] > this.mseHistory[1]) {
       this.options.learningRate = this.options.learningRate / 2;
-    } else{
-      this.options.learningRate *= 1.05;  //increase the learning by 5% if the MSE error goes down and we are getting closer to the optimal value
+    } else {
+      this.options.learningRate *= 1.05; //increase the learning by 5% if the MSE error goes down and we are getting closer to the optimal value
     }
   }
 }
