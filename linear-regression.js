@@ -32,23 +32,29 @@ class LinearRegression {
 
   train() {
     //batch gradient descent        rows/batchsize == how many times we iterate
-    const batchQuantity = Math.floor(this.features.shape[0] / this.options.batchSize); // in case we have soem leftover odd number
+    const batchQuantity = Math.floor(
+      this.features.shape[0] / this.options.batchSize
+    ); // in case we have soem leftover odd number
 
-    for (let index = 0; index < this; index++) {
-      for(let j = 0; j < batchQuantity; j++){
+    for (let index = 0; index < this.options.iterations; index++) {
+      for (let j = 0; j < batchQuantity; j++) {
         const startIndex = j * this.options.batchSize;
-        const {batchSize} = this.options;
+        const batchSize = this.options.batchSize;
 
-        const featureSlice = this.features.slice([startIndex, 0], [batchSize, -1]);
+        const featureSlice = this.features.slice(
+          [startIndex, 0],
+          [batchSize, -1]
+        );
         const labelSlice = this.labels.slice([startIndex, 0], [batchSize, -1]);
-        
+
         this.gradientDescent(featureSlice, labelSlice);
       }
       this.recordMSE();
       this.updateLearningRate();
     }
   }
-  test(testFeatures, testLabels) {
+  
+  test(testFeatures,testLabels){
     testFeatures = this.processFeatures(testFeatures);
     testLabels = tf.tensor(testLabels);
 
@@ -57,13 +63,16 @@ class LinearRegression {
     //coefficient of determination  R2 = 1 - total sum of squares / sum of squares of residuals  check notes, aka gauging accuracy of our prediction
 
     //sum of squares of residuals
-    const res = testLabels
-      .sub(predictions)
-      .pow(2)
-      .sum() // we dont have to provide axis for this
-      .get();
+    const res = testLabels.sub(predictions)
+    .pow(2)
+    .sum() // we dont have to provide axis for this
+    .get()
     //total sum of squares
-    const tot = testLabels.sub(testLabels.mean()).pow(2).sum().get();
+    const tot = testLabels
+    .sub(testLabels.mean())
+    .pow(2)
+    .sum()
+    .get();
 
     return 1 - res / tot;
   }
